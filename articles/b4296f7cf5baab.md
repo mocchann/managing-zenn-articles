@@ -3,7 +3,7 @@ title: "新しい技術を触るときのキャッチアップ方法"
 emoji: "🚀"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["TypeScript", "React", "NestJs", "Prisma", "GraphQL"]
-published: false
+published: true
 ---
 
 :::message
