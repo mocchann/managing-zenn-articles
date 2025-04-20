@@ -87,7 +87,7 @@ Transaction> update test set col='second' where id = 1;
 DirtyRead> select * from test;
 ```
 
-![alt text](</images/07fcdbc0cce8b5/dirty_lead.png>)
+![alt text](</images/07fcdbc0cce8b5/dirty_read.png>)
 
 Transactionでupdateした内容をまだコミットしていないにも関わらず、DirtyReadのトランザクションからデータを読み取れてしまいました
 
