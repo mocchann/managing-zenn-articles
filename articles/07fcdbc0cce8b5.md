@@ -48,8 +48,8 @@ https://dev.mysql.com/doc/refman/8.0/ja/innodb-transaction-isolation-levels.html
 
 ```
 mysql> create table test(id int not null primary key, col varchar(20));
-mysql > insert into test (1, 'first');
-mysql > select * from test
+mysql> insert into test (1, 'first');
+mysql> select * from test
 ```
 
 ![alt text](</images/07fcdbc0cce8b5/select_test.png>)
