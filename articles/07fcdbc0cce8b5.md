@@ -65,7 +65,9 @@ mysql> select * from test
 ```
 mysql> prompt DirtyRead>
 
-// ダーティリードを起こすために、MySQLの分離レベルをリードアンコミッテッドに設定する(MySQL8.xのdefaultはリピータブルリードのため)
+// ダーティリードを起こすために、MySQLの分離レベルをリードアンコミッテッドに設定する
+(MySQL8.xのdefaultはリピータブルリードのため: https://dev.mysql.com/doc/refman/8.0/ja/innodb-transaction-isolation-levels.html)
+
 DirtyRead> set transaction isolation level read uncommitted;
 
 DirtyRead> start transaction;
@@ -138,6 +140,7 @@ Transaction> commit;
 そして再度、先ほどと同様のファジーリードのトランザクションでデータを読み取ります
 
 ```
+// 2回目の読み取りを実行
 FuzzyRead> select * from test;
 ```
 
@@ -198,6 +201,8 @@ PhantomRead> select * from test;
 
 実はこれ、MySQLのinnoDB型のテーブルが**MVCC**という仕組みで動作しているため、ファントムリードが起きないようになっているからです
 
+https://dev.mysql.com/doc/refman/8.0/ja/glossary.html#glos_mvcc
+
 ```
 // MySQLでファントムリードを再現するためリードコミッテッドに設定する
 PhantomRead> set transaction isolation level read committed;
@@ -219,13 +224,13 @@ Transaction> commit;
 ```
 
 ```
-2回目の読み取りを実行
+// 2回目の読み取りを実行
 PhantomRead> select * from test;
 ```
 
 ![alt text](</images/07fcdbc0cce8b5/select_test_phantom_read4.png>)
 
-MySQLの分離レベルをリードコミッテッドに設定するとファントムリードを再現しました
+MySQLの分離レベルをリードコミッテッドに設定するとファントムリードを再現できました
 
 同じトランザクションにも関わらず、1回目と2回目の読み取りで結果が異なり新しいレコードが表示されています
 
@@ -235,19 +240,19 @@ MySQLの分離レベルをリードコミッテッドに設定するとファン
 | ---- | ---- | ---- | ---- |
 | リードアンコミッテッド | ◯ | ◯ | ◯ |
 | リードコミッテッド | × | ◯ | ◯ |
-| リピータブルリード | × | × | × | // リピータブルリードでもファントムリードは起きない
+| リピータブルリード | × | × | × |
 | シリアライザブル | × | × | × |
 
 
 :::message
-このように**あるトランザクションで複数回読み取りを行ったときに、データが現れたり(INSERT)消えたり(DELETE)してしまう現象をファントムリード**と呼びます
+このように**あるトランザクションで複数回読み取りを行ったときに、データが現れたり(INSERT時)消えたり(DELETE時)してしまう現象をファントムリード**と呼びます
 :::
 
 ## おわりに
 
 分離レベルと現象について記事にまとめてきましたが、ここでひとつ新たな疑問が浮かびました
 
-冒頭で記載した「とある日の業務中のこと、毎時1回動作するバッチにより生成されるテーブルのレコード件数が、**正しいときもあれば2倍になるときもある**という現象に出くわしました」について、おそらくファントムリードだろうとの結論になっていました
+冒頭で記載した「毎時1回動作するバッチにより生成されるテーブルのレコード件数が、**正しいときもあれば2倍になるときもある**という現象」について、**おそらくファントムリードだろうとの結論**になっていました
 
 そこで改めてMySQLの分離レベルを確認してみたのですが、**REPEATABLE READ**でした
 
