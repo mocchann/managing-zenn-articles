@@ -47,9 +47,9 @@ https://dev.mysql.com/doc/refman/8.0/ja/innodb-transaction-isolation-levels.html
 ※MySQL8.xを使用します
 
 ```
-myscreate table test(id int not null primary key, col varchar(20));
-insert into test (1, 'first');
-select * from test
+mysql> create table test(id int not null primary key, col varchar(20));
+mysql > insert into test (1, 'first');
+mysql > select * from test
 ```
 
 ![alt text](</images/07fcdbc0cce8b5/select_test.png>)
@@ -63,7 +63,7 @@ select * from test
 まずはダーティリード用のトランザクションを準備する
 
 ```
-prompt DirtyRead>
+mysql> prompt DirtyRead>
 
 // ダーティリードを起こすために、MySQLの分離レベルをリードアンコミッテッドに設定する(MySQL8.xのdefaultはリピータブルリードのため)
 DirtyRead> set transaction isolation level read uncommitted;
@@ -74,7 +74,7 @@ DirtyRead> start transaction;
 別のシェルを立ち上げて以下を実行
 
 ```
-prompt Transaction>
+mysql> prompt Transaction>
 
 Transaction> start transaction;
 
@@ -110,7 +110,7 @@ Transaction> commit;
 ファジーリード用のトランザクションを準備する
 
 ```
-prompt FuzzyRead>
+mysql> prompt FuzzyRead>
 
 // ファジーリードを起こすため、分離レベルをリードコミッテッドに設定する
 FuzzyRead> set transaction isolation level read committed;
@@ -126,7 +126,7 @@ FuzzyRead> select * from test;
 次に新しくシェルを追加して、別のトランザクションの中でレコードを更新します
 
 ```
-prompt Transaction>
+mysql> prompt Transaction>
 
 Transaction> start transaction;
 
@@ -158,7 +158,7 @@ FuzzyRead> select * from test;
 ファントムリード用のトランザクションを準備する
 
 ```
-prompt PhantomRead>
+mysql> prompt PhantomRead>
 
 // ファントムーリードを起こすため、分離レベルをリピータブルリードに設定する
 PhantomRead> set transaction isolation level repeatable read;
@@ -176,7 +176,7 @@ PhantomRead> select * from test;
 次に新しくシェルを追加して、別のトランザクションの中でレコードを挿入します
 
 ```
-prompt Transaction>
+mysql> prompt Transaction>
 
 Transaction> start transaction;
 
