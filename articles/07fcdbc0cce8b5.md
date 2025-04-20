@@ -47,7 +47,7 @@ https://dev.mysql.com/doc/refman/8.0/ja/innodb-transaction-isolation-levels.html
 ※MySQL8.xを使用します
 
 ```
-create table test(id int not null primary key, col varchar(20));
+myscreate table test(id int not null primary key, col varchar(20));
 insert into test (1, 'first');
 select * from test
 ```
