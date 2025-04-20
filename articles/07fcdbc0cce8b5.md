@@ -51,7 +51,7 @@ select * from test
 
 あるトランザクションがコミットされる前に、別のトランザクションからデータを読み取れてしまう現象のこと
 
-以下をMySQLコマンドラインで実行
+まずはダーティリード用のトランザクションを準備する
 
 ```
 prompt DirtyRead>
@@ -72,7 +72,7 @@ Transaction> start transaction;
 Transaction> update test set col='second' where id = 1;
 ```
 
-再度、DirtyReadのコネクションから以下を実行
+再度、DirtyReadのトランザクションから以下を実行
 
 ```
 DirtyRead> select * from test;
@@ -80,11 +80,11 @@ DirtyRead> select * from test;
 
 ![alt text](</images/07fcdbc0cce8b5/dirty_lead.png>)
 
-Transactionのコネクションでupdateした内容をまだコミットしていないのにも関わらず、DirtyReadのコネクションからデータを読み取れてしまいました
+Transactionでupdateした内容をまだコミットしていないのにも関わらず、DirtyReadのトランザクションからデータを読み取れてしまいました
 
 このように**あるトランザクションで行ったコミット前の変更を、別のトランザクションで読み取れてしまう現象をダーティリード**と呼びます
 
-次の検証に移るのでTransactionのコネクション側で一旦コミットしておきます
+次の検証に移るのでTransaction側で一旦コミットしておきます
 
 ```
 Transaction> commit;
@@ -94,7 +94,47 @@ Transaction> commit;
 
 あるトランザクションが1回目に読み取ったデータを再度読み取ったときに、2回目の結果が初回読み取りとして扱われてしまう現象
 
+ファジーリード用のトランザクションを準備する
 
+```
+prompt FuzzyRead>
+
+// ファジーリードを起こすため、分離レベルをリードコミッテッドに設定する
+FuzzyRead> set transaction isolation level read committed;
+
+FuzzyRead> start transaction;
+
+// 1回目の読み取りを実行
+FuzzyRead> select * from test;
+```
+
+![alt text](</images/07fcdbc0cce8b5/select_test_fuzzy_read.png>)
+
+この時点ではレコードが1件だけ読み取られています
+
+次に新しくシェルを追加して、別のトランザクションの中でレコードを挿入します
+
+```
+prompt Transaction>
+
+Transaction> start transaction;
+
+Transaction> insert into test values(2, 'fuzzy');
+
+Transaction> commit;
+```
+
+そして再度、先ほどと同様のファジーリードのトランザクションでデータを読み取ります
+
+```
+FuzzyRead> select * from test;
+```
+
+![alt text](</images/07fcdbc0cce8b5/select_test_fuzzy_read2.png>)
+
+同じトランザクションにも関わらず、1回目と2回目の読み取りで結果が異なっています
+
+このように、あるトランザクションが1回目に読み込んだデータを再度読み込んだときに、結果が変わってしまう現象をファジーリードと呼びます
 
 ### ファントムリード(Phantom Read)
 
